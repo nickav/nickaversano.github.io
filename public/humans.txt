@@ -1,0 +1,8 @@
+/* TEAM */
+  Developer: Nick Aversano
+  Twitter: @nickaversano
+  Location: NJ, USA, Earth
+
+/* THANKS */
+  Inspiration: jhil.co
+  Twitter: @jhilmd
