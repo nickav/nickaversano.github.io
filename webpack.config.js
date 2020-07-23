@@ -65,7 +65,7 @@ module.exports = {
   entry: ['babel-polyfill', './src/index.jsx'],
 
   output: {
-    path: path.join(__dirname, '/bin'),
+    path: path.join(__dirname, '/build'),
     filename: isProd ? '[name].[chunkhash:8].js' : 'main.js',
     chunkFilename: isProd ? '[name].[chunkhash:8].bundle.js' : '[id].js',
     publicPath: '/',
@@ -77,11 +77,10 @@ module.exports = {
     extensions: ['.js', '.jsx', '.json'],
     alias: {
       '@': path.resolve(__dirname, 'src'),
-      '@cmp': path.resolve(__dirname, 'src', 'components'),
-      '@style': path.resolve(__dirname, 'src', 'style'),
-      '@helpers': path.resolve(__dirname, 'src', 'helpers'),
-      '@pub': path.resolve(__dirname, 'public'),
-      '@img': path.resolve(__dirname, 'public', 'img'),
+      '~': path.resolve(__dirname),
+      '@c': path.resolve(__dirname, 'src', 'components'),
+      '@s': path.resolve(__dirname, 'src', 'style'),
+      '@h': path.resolve(__dirname, 'src', 'helpers'),
     },
   },
 
@@ -132,6 +131,10 @@ module.exports = {
           name: '[name].[hash:8].[ext]',
           outputPath: 'img/',
         },
+      },
+      {
+        test: /\.(txt|md)$/,
+        loader: 'raw-loader',
       },
       {
         test: /\.svg$/,
@@ -197,7 +200,7 @@ module.exports = {
     disableHostCheck: true,
     historyApiFallback: true,
     inline: true,
-    contentBase: 'bin/',
+    contentBase: 'build/',
     overlay: {
       warnings: !isProd,
       errors: !isProd,
