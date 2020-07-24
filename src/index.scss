@@ -1,0 +1,104 @@
+@import 'style/lib/reset.min.scss';
+
+@import 'colors';
+@import 'fonts';
+
+html,
+body {
+  color: $black;
+  font-family: $base-font;
+  font-size: 16px;
+  line-height: 1.5;
+  position: relative;
+  overflow-x: hidden;
+  height: 100%;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+
+  & > * {
+    height: 100%;
+  }
+}
+
+*,
+*:after,
+*:before {
+  box-sizing: border-box;
+}
+
+a {
+  color: black;
+  text-decoration: none;
+
+  &:hover {
+    color: rgba(0, 0, 0, 0.8);
+    transition: 50ms linear color;
+  }
+}
+
+img {
+  display: block;
+  max-width: 100%;
+}
+
+h1,
+.h1 {
+  @extend %h1;
+}
+h2,
+.h2 {
+  @extend %h2;
+}
+h3,
+.h3 {
+  @extend %h3;
+}
+h4,
+.h4 {
+  @extend %h4;
+}
+h5,
+.h5 {
+  @extend %h5;
+}
+p,
+.text {
+  @extend %text;
+}
+
+button {
+  font-family: $base-font;
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+input,
+textarea {
+  font-size: 16px;
+  font-family: $base-font;
+  letter-spacing: 0.5px;
+  border: none;
+  padding: 0px;
+  margin: 2px 0 0 0;
+  resize: none;
+  background-color: rgba(white, 0);
+}
+
+textarea:focus,
+input:focus {
+  outline: none;
+}
+
+::placeholder {
+  color: black;
+  opacity: 1;
+}
+
+:-ms-input-placeholder {
+  color: black;
+}
+
+::-ms-input-placeholder {
+  color: black;
+}

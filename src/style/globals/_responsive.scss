@@ -1,0 +1,31 @@
+// prettier-ignore
+$screen-sizes: (
+  // Extra small devices
+  xs: 320px,
+  // Small devices and tablets
+  sm: 576px,
+  // Medium devices and desktops
+  md: 768px,
+  // Large devices and wide screens
+  lg: 992px,
+  // Extra large devices
+  xl: 1200px
+);
+
+@mixin breakpoint($size, $invert: true) {
+  $width: map-get($screen-sizes, $size);
+
+  @if $width == null {
+    @error "Unknow screen size: #{$size}";
+  }
+
+  $prop: 'min-width';
+  @if $invert {
+    $prop: 'max-width';
+    $width: $width - 1;
+  }
+
+  @media only screen and (#{$prop}: #{$width}) {
+    @content;
+  }
+}

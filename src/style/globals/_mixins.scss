@@ -1,0 +1,52 @@
+@mixin child-space-vert($space) {
+  > * {
+    margin-bottom: $space;
+  }
+  > *:last-child {
+    margin-bottom: 0px;
+  }
+}
+
+@mixin child-space-horz($space) {
+  > * {
+    margin-right: $space;
+  }
+  > *:last-child {
+    margin-right: 0px;
+  }
+}
+
+@mixin size($w, $h: null) {
+  @if not $h {
+    $h: $w;
+  }
+  width: $w;
+  height: $h;
+}
+
+@mixin circle($diameter) {
+  height: $diameter;
+  width: $diameter;
+  border-radius: 50%;
+}
+
+@mixin ellipsis {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@mixin flex-center() {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+@mixin absolute-fill() {
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+}

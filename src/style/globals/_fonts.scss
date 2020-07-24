@@ -1,0 +1,54 @@
+@import 'mixins';
+@import 'colors';
+
+/* Font weights */
+$bold: bold;
+$medium: 500;
+$regular: normal;
+$light: 300;
+
+$header-font: 'Arial', sans-serif;
+$base-font: 'Arial', sans-serif;
+
+%h1,
+%h2,
+%h3,
+%h4,
+%h5 {
+  font-family: $header-font;
+  font-weight: $regular;
+}
+
+%h1 {
+  font-size: 44px;
+  font-weight: bold;
+}
+
+%h2 {
+  font-size: 34px;
+  font-weight: bold;
+  color: black;
+}
+
+%h3 {
+  font-size: 20px;
+  font-weight: bold;
+}
+
+%h4 {
+  font-size: 20px;
+  line-height: 24px;
+}
+
+%h5 {
+  font-size: 1rem;
+}
+
+%text,
+ol,
+ul {
+  font-size: 1rem;
+  font-family: $base-font;
+  font-weight: $regular;
+  letter-spacing: 0.5px;
+}
