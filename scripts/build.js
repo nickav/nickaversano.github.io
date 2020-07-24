@@ -36,10 +36,6 @@ const os_remove_directory = (dir) => {
   childProcess.execSync(`rm -rf ${dir}`);
 };
 
-const os_make_directory = (dir) => {
-  fs.mkdirSync(dir);
-};
-
 const path_basename = (file) => path.basename(file);
 
 const parseFrontmatter = (content) => {
@@ -140,7 +136,7 @@ const run = () => {
   os_copy_directory(publicPath, outputPath);
 
   os_write_file(path.join(outputPath, 'index.html'), indexHtml);
-  os_write_file(path.join(outputPath, 'index.js'), indexJs);
+  os_write_file(path.join(outputPath, 'index.js'), `const posts = ${JSON.stringify(posts)};\n\n${indexJs}`);
 };
 
 run();
