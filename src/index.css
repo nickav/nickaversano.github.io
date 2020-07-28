@@ -89,3 +89,8 @@ img {
   background: #222;
   color: white;
 }
+
+.Posts {
+  flex-direction: column;
+  width: 100%;
+}

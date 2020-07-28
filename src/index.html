@@ -4,17 +4,13 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Nick Aversano</title>
-    <meta
-      name="description"
-      content="Hi, I'm Nick. I create websites, develop apps, shoot videos, design things, and make games."
-    />
+    <meta name="description" content="Hi, I'm Nick. I create websites, develop apps, shoot videos, design things, and make games." />
     <meta name="theme-color" content="#222222" />
     <link rel="shortcut icon" href="/favicon.ico" />
     <link rel="stylesheet" href="./index.css" />
   </head>
   <body>
     <div id="app" class="App">
-      {posts.map(p => p.title)}
       <header>
         <div class="Header">
           This is a header
@@ -23,7 +19,7 @@
 
       <div id="content">
         <div class="Posts">
-          <div class="post"></div>
+          {posts.map(e => `<div class="post">${e.title}</div>`).join('')}
         </div>
       </div>
 

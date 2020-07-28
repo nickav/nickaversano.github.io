@@ -76,7 +76,10 @@ const parseMarkdownFiles = (files) =>
     const key = path_basename(file);
     const parts = key.split('-');
     const id = parseInt(parts[0], 10);
-    const slug = parts.slice(1).join('-').replace(/\.md$/, '');
+    const slug = parts
+      .slice(1)
+      .join('-')
+      .replace(/\.md$/, '');
 
     const [props, data] = extractFrontmatterAndData(raw);
 
@@ -102,6 +105,9 @@ const minifyCss = (str) => {
   return str;
 };
 
+const minifyHtml = (str) =>
+  str.replace(/>\s+</gm, '><').replace(/\s{2,}/g, ' ');
+
 const hashFile = (contents, type = 'sha1') => {
   const hash = crypto.createHash(type);
   hash.setEncoding('hex');
@@ -125,21 +131,25 @@ const matchAll = (str, regex) => {
 };
 
 const evalWithContext = (js, context) => {
-  return function () {
+  return function() {
     return eval(js);
   }.call(context);
 };
 
 const evaluateDynamicJs = (str, ctx = {}) => {
   let result = str;
+  let offset = 0;
 
   matchAll(str, /{(.*)}/g).forEach((match) => {
     const expr = match[1];
-    const value = evalWithContext(expr, ctx);
-    result =
-      result.slice(0, match.index) +
-      value +
-      result.slice(match.index + match[0].length);
+
+    const value = evalWithContext(expr, ctx).toString();
+
+    const length = match[0].length;
+    const startIndex = match.index + offset;
+    const endIndex = startIndex + length;
+    result = result.slice(0, startIndex) + value + result.slice(endIndex);
+    offset += value.length - length;
   });
 
   return result;
@@ -148,7 +158,7 @@ const evaluateDynamicJs = (str, ctx = {}) => {
 const publicPath = path.join(__dirname, '../public');
 const outputPath = path.join(__dirname, '../build');
 const srcPath = path.join(__dirname, '../src');
-const postsPath = path.join(publicPath, '_posts');
+const postsPath = path.join(srcPath, '_posts');
 
 const posts = parseMarkdownFiles(
   os_scan_directory_and_read_entire_files(postsPath)
@@ -159,19 +169,20 @@ const ctx = {
 };
 
 const indexJs = os_read_entire_file(path.join(srcPath, 'index.js'));
+
 const indexCss = minifyCss(
   os_read_entire_file(path.join(srcPath, 'index.css'))
 );
-const indexHtml = evaluateDynamicJs(
-  os_read_entire_file(path.join(srcPath, 'index.html')),
-  ctx
-)
-  .replace('__RANDOM__', Math.random())
-  .replace('__JS_HASH__', hashFile(indexJs))
-  .replace(
-    '<link rel="stylesheet" href="./index.css" />',
-    `<style>${indexCss}</style>`
-  );
+
+const indexHtml = minifyHtml(
+  evaluateDynamicJs(os_read_entire_file(path.join(srcPath, 'index.html')), ctx)
+    .replace('__RANDOM__', Math.random())
+    .replace('__JS_HASH__', hashFile(indexJs))
+    .replace(
+      '<link rel="stylesheet" href="./index.css" />',
+      `<style>${indexCss}</style>`
+    )
+);
 
 os_remove_directory(outputPath);
 os_copy_directory(publicPath, outputPath);
