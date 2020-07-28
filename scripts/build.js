@@ -83,8 +83,8 @@ const parseMarkdownFiles = (files) =>
     return {
       id,
       slug,
-      props,
       html: converter.makeHtml(data.trim()),
+      ...props,
     };
   });
 
@@ -110,33 +110,74 @@ const hashFile = (contents, type = 'sha1') => {
   return hash.read();
 };
 
-const run = () => {
-  const publicPath = path.join(__dirname, '../public');
-  const outputPath = path.join(__dirname, '../build');
-  const srcPath = path.join(__dirname, '../src');
-  const postsPath = path.join(publicPath, '_posts');
+const matchAll = (str, regex) => {
+  if (!regex.global) {
+    const result = str.match(regex);
+    return result ? [result] : [];
+  }
 
-  const posts = parseMarkdownFiles(
-    os_scan_directory_and_read_entire_files(postsPath)
-  );
-
-  const indexJs = os_read_entire_file(path.join(srcPath, 'index.js'));
-  const indexCss = minifyCss(
-    os_read_entire_file(path.join(srcPath, 'index.css'))
-  );
-  const indexHtml = os_read_entire_file(path.join(srcPath, 'index.html'))
-    .replace('__RANDOM__', Math.random())
-    .replace('__JS_HASH__', hashFile(indexJs))
-    .replace(
-      '<link rel="stylesheet" href="./index.css" />',
-      `<style>${indexCss}</style>`
-    );
-
-  os_remove_directory(outputPath);
-  os_copy_directory(publicPath, outputPath);
-
-  os_write_file(path.join(outputPath, 'index.html'), indexHtml);
-  os_write_file(path.join(outputPath, 'index.js'), `const posts = ${JSON.stringify(posts)};\n\n${indexJs}`);
+  const result = [];
+  let match = null;
+  while ((match = regex.exec(str))) {
+    result.push(match);
+  }
+  return result;
 };
 
-run();
+const evalWithContext = (js, context) => {
+  return function () {
+    return eval(js);
+  }.call(context);
+};
+
+const evaluateDynamicJs = (str, ctx = {}) => {
+  let result = str;
+
+  matchAll(str, /{(.*)}/g).forEach((match) => {
+    const expr = match[1];
+    const value = evalWithContext(expr, ctx);
+    result =
+      result.slice(0, match.index) +
+      value +
+      result.slice(match.index + match[0].length);
+  });
+
+  return result;
+};
+
+const publicPath = path.join(__dirname, '../public');
+const outputPath = path.join(__dirname, '../build');
+const srcPath = path.join(__dirname, '../src');
+const postsPath = path.join(publicPath, '_posts');
+
+const posts = parseMarkdownFiles(
+  os_scan_directory_and_read_entire_files(postsPath)
+);
+
+const ctx = {
+  posts,
+};
+
+const indexJs = os_read_entire_file(path.join(srcPath, 'index.js'));
+const indexCss = minifyCss(
+  os_read_entire_file(path.join(srcPath, 'index.css'))
+);
+const indexHtml = evaluateDynamicJs(
+  os_read_entire_file(path.join(srcPath, 'index.html')),
+  ctx
+)
+  .replace('__RANDOM__', Math.random())
+  .replace('__JS_HASH__', hashFile(indexJs))
+  .replace(
+    '<link rel="stylesheet" href="./index.css" />',
+    `<style>${indexCss}</style>`
+  );
+
+os_remove_directory(outputPath);
+os_copy_directory(publicPath, outputPath);
+
+os_write_file(path.join(outputPath, 'index.html'), indexHtml);
+os_write_file(
+  path.join(outputPath, 'index.js'),
+  `const posts = ${JSON.stringify(posts)};\n\n${indexJs}`
+);
