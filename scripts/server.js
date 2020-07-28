@@ -1,0 +1,62 @@
+const http = require('http');
+const url = require('url');
+const fs = require('fs');
+const path = require('path');
+
+const cwd = process.cwd();
+const root = process.argv[2] ? path.join(cwd, process.argv[2]) : cwd;
+
+const extToContentType = {
+  '.ico': 'image/x-icon',
+  '.html': 'text/html',
+  '.js': 'text/javascript',
+  '.json': 'application/json',
+  '.css': 'text/css',
+  '.png': 'image/png',
+  '.jpg': 'image/jpeg',
+  '.wav': 'audio/wav',
+  '.mp3': 'audio/mpeg',
+  '.svg': 'image/svg+xml',
+  '.pdf': 'application/pdf',
+};
+
+const server = http.createServer((req, res) => {
+  console.log(`[${req.method}] ${req.url}`);
+
+  const parsedUrl = url.parse(req.url);
+  let relativeName = parsedUrl.pathname;
+  let pathname = path.join(root, relativeName);
+  const ext = path.parse(pathname).ext || '.html';
+
+  fs.stat(pathname, (err, stat) => {
+    if (err) {
+      res.statusCode = 404;
+      res.end(`File '${relativeName}' not found!`);
+      return;
+    }
+
+    if (stat.isDirectory()) {
+      pathname = path.join(pathname, `index.html`);
+      relativeName = path.join(relativeName, `index.html`);
+    }
+
+    fs.readFile(pathname, (err, data) => {
+      if (err) {
+        res.statusCode = 500;
+        res.end(`Error reading: '${relativeName}'`);
+        console.error(err);
+      } else {
+        const contentType = extToContentType[ext] || 'text/plain';
+        res.setHeader('Content-Type', contentType);
+        res.end(data);
+      }
+    });
+  });
+});
+
+const port = process.env.PORT || 8080;
+server.listen(port, () =>
+  console.log(
+    `Server listening on port ${port}...\n  Static files root: ${root}`
+  )
+);

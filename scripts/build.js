@@ -50,7 +50,8 @@ const parseFrontmatter = (content) => {
 
     const key = line.slice(0, delimIndex).trim();
     const value = line.slice(delimIndex + 1).trim();
-    result[key] = value;
+    const isQuotted = value.startsWith(`'`) || value.startsWith(`"`);
+    result[key] = isQuotted ? value.slice(1, value.length - 1) : value;
   });
 
   return result;
@@ -136,6 +137,14 @@ const evalWithContext = (js, context) => {
   }.call(context);
 };
 
+const stringify = (value) => {
+  if (Array.isArray(value)) {
+    return value.join('\n');
+  }
+
+  return value.toString();
+}
+
 const evaluateDynamicJs = (str, ctx = {}) => {
   let result = str;
   let offset = 0;
@@ -143,7 +152,7 @@ const evaluateDynamicJs = (str, ctx = {}) => {
   matchAll(str, /{(.*)}/g).forEach((match) => {
     const expr = match[1];
 
-    const value = evalWithContext(expr, ctx).toString();
+    const value = stringify(evalWithContext(expr, ctx));
 
     const length = match[0].length;
     const startIndex = match.index + offset;
