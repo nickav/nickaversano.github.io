@@ -43,8 +43,8 @@ body,
 #app {
   color: black;
   font-size: 16px;
-  font-family: 'San Francisco Text', system, -apple-system, BlinkMacSystemFont,
-    sans-serif;
+  font-family: 'San Fransisco Text', system, -apple-system, BlinkMacSystemFont,
+    'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
   line-height: 1.5;
   position: relative;
   overflow-x: hidden;
@@ -74,16 +74,6 @@ img {
   max-width: 100%;
 }
 
-h1,
-h2,
-h3,
-h4,
-h5,
-h6 {
-  font-family: 'San Francisco Text', system, -apple-system, BlinkMacSystemFont,
-    sans-serif;
-}
-
 h1 {
   font-size: 48px;
   font-weight: bold;
@@ -109,8 +99,6 @@ h5 {
 p,
 .text {
   font-size: 16px;
-  font-family: 'San Francisco Text', system, -apple-system, BlinkMacSystemFont,
-    sans-serif;
   font-weight: normal;
   letter-spacing: 0.5px;
 }

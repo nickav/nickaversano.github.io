@@ -3,40 +3,31 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Nick Aversano</title>
+    <title>{title}</title>
     <meta
       name="description"
       content="Hi, I'm Nick. I create websites, develop apps, shoot videos, design things, and make games."
     />
-    <meta name="theme-color" content="#222222" />
-    <link rel="shortcut icon" href="/favicon.ico" />
-    <link rel="stylesheet" href="./index.css" />
+    <meta name="theme-color" content="#000000" />
+    <link rel="shortcut icon" href="/favicon.png" />
+    <style>{style}</style>
+    {meta}
   </head>
   <body>
     <div id="app" class="App">
       <header>
         <div class="Header">
           <div class="left">
-            This is a header
+            <a href="/">Nick Aversano</a>
           </div>
           <div class="right">
-            <div class="icon">{inline('images/icons/github.svg')}</div>
+            <a href="https://github.com/nickav" target="_blank" class="icon">{icon('github')}</a>
           </div>
         </div>
       </header>
 
-      <section>
-        <div class="Hero">
-          <h2>Hi, I'm Nick.</h2>
-        </div>
-      </section>
-
       <div id="content">
-        <div class="Posts">
-          {posts.slice().reverse().map(e => `
-          <div class="post">${e.title}</div>
-          `)}
-        </div>
+        {content}
       </div>
 
       <footer>
