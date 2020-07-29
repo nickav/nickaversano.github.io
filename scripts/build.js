@@ -2,12 +2,15 @@ const fs = require('fs');
 const path = require('path');
 const childProcess = require('child_process');
 const crypto = require('crypto');
+const vm = require('vm');
 
 const showdown = require('showdown');
 const converter = new showdown.Converter();
 
-const os_scan_directory = (dir) =>
-  fs.readdirSync(dir).map((file) => path.join(dir, file));
+const os_scan_directory = (dir, absolutePaths = true) => {
+  const results = fs.readdirSync(dir);
+  return absolutePaths ? results.map((file) => path.join(dir, file)) : results;
+};
 
 const os_read_entire_file = (path) => {
   try {
@@ -24,10 +27,11 @@ const os_copy_directory = (from, to) => {
   childProcess.execSync(`cp -r ${from} ${to}`);
 };
 
-const os_scan_directory_and_read_entire_files = (dir) => {
+const os_scan_directory_and_read_entire_files = (dir, absolutePaths = true) => {
   const result = {};
-  os_scan_directory(dir).forEach((file) => {
-    result[file] = os_read_entire_file(file);
+  os_scan_directory(dir, true).forEach((file) => {
+    const key = absolutePaths ? file : path.relative(dir, file);
+    result[key] = os_read_entire_file(file);
   });
   return result;
 };
@@ -77,10 +81,7 @@ const parseMarkdownFiles = (files) =>
     const key = path_basename(file);
     const parts = key.split('-');
     const id = parseInt(parts[0], 10);
-    const slug = parts
-      .slice(1)
-      .join('-')
-      .replace(/\.md$/, '');
+    const slug = parts.slice(1).join('-').replace(/\.md$/, '');
 
     const [props, data] = extractFrontmatterAndData(raw);
 
@@ -131,10 +132,8 @@ const matchAll = (str, regex) => {
   return result;
 };
 
-const evalWithContext = (js, context) => {
-  return function() {
-    return eval(js);
-  }.call(context);
+const evalWithContext = (js, ctx = {}) => {
+  return vm.runInContext(js, vm.createContext(ctx));
 };
 
 const stringify = (value) => {
@@ -143,61 +142,126 @@ const stringify = (value) => {
   }
 
   return value.toString();
-}
+};
+
+const findMatchingBrace = (src, startIndex, openBrace, closeBrace) => {
+  const startChar = src.charAt(startIndex);
+  const matchForward = startChar === openBrace;
+  const matchBackward = startChar === closeBrace;
+
+  if (!matchForward && !matchBackward) {
+    console.error(`startIndex must be a '${openBrace}' character!`);
+    return -1;
+  }
+
+  const dir = matchForward ? 1 : -1;
+  let index = startIndex + dir;
+  let counter = 1;
+
+  while (counter > 0 && index < src.length && index > 0) {
+    const char = src.charAt(index);
+
+    if (char === openBrace) {
+      counter += dir;
+    }
+
+    if (char === closeBrace) {
+      counter -= dir;
+    }
+
+    index += dir;
+  }
+
+  return counter === 0 ? index : -1;
+};
 
 const evaluateDynamicJs = (str, ctx = {}) => {
-  let result = str;
-  let offset = 0;
+  let result = '';
 
-  matchAll(str, /{(.*)}/g).forEach((match) => {
-    const expr = match[1];
+  let prevIndex = 0;
+  let openIndex = str.indexOf('{');
 
-    const value = stringify(evalWithContext(expr, ctx));
+  while (openIndex >= 0) {
+    const closeIndex = findMatchingBrace(str, openIndex, '{', '}');
 
-    const length = match[0].length;
-    const startIndex = match.index + offset;
-    const endIndex = startIndex + length;
-    result = result.slice(0, startIndex) + value + result.slice(endIndex);
-    offset += value.length - length;
-  });
+    if (closeIndex < 0) {
+      throw `Missing closing brace for expression: ${str.slice(
+        openIndex,
+        openIndex + 16
+      )}...`;
+    }
 
+    const expr = str.slice(openIndex + 1, closeIndex - 1);
+    const dynamicValue = stringify(evalWithContext(expr, ctx));
+
+    result += str.slice(prevIndex, openIndex) + dynamicValue;
+
+    prevIndex = closeIndex;
+    openIndex = str.indexOf('{', closeIndex + 1);
+  }
+
+  result += str.slice(prevIndex);
   return result;
 };
 
-const publicPath = path.join(__dirname, '../public');
-const outputPath = path.join(__dirname, '../build');
-const srcPath = path.join(__dirname, '../src');
-const postsPath = path.join(srcPath, '_posts');
+const inlineVariables = (str, ctx) => {
+  str = '\n' + str;
 
-const posts = parseMarkdownFiles(
-  os_scan_directory_and_read_entire_files(postsPath)
-);
+  Object.keys(ctx)
+    .reverse()
+    .forEach((key) => {
+      const value = ctx[key];
+      if (typeof value === 'function') return;
 
-const ctx = {
-  posts,
+      const inline = `const ${key} = ${JSON.stringify(value)};\n`;
+      str = inline + str;
+    });
+
+  return str;
 };
 
-const indexJs = os_read_entire_file(path.join(srcPath, 'index.js'));
+const run = () => {
+  const publicPath = path.join(__dirname, '../public');
+  const outputPath = path.join(__dirname, '../build');
+  const srcPath = path.join(__dirname, '../src');
+  const postsPath = path.join(srcPath, '_posts');
 
-const indexCss = minifyCss(
-  os_read_entire_file(path.join(srcPath, 'index.css'))
-);
+  const posts = parseMarkdownFiles(
+    os_scan_directory_and_read_entire_files(postsPath, false)
+  );
 
-const indexHtml = minifyHtml(
-  evaluateDynamicJs(os_read_entire_file(path.join(srcPath, 'index.html')), ctx)
-    .replace('__RANDOM__', Math.random())
-    .replace('__JS_HASH__', hashFile(indexJs))
-    .replace(
-      '<link rel="stylesheet" href="./index.css" />',
-      `<style>${indexCss}</style>`
-    )
-);
+  const vars = {
+    posts,
+  };
 
-os_remove_directory(outputPath);
-os_copy_directory(publicPath, outputPath);
+  const ctx = {
+    ...vars,
+    inline: (file) => {
+      return fs.readFileSync(path.join(publicPath, file)).toString();
+    },
+  };
 
-os_write_file(path.join(outputPath, 'index.html'), indexHtml);
-os_write_file(
-  path.join(outputPath, 'index.js'),
-  `const posts = ${JSON.stringify(posts)};\n\n${indexJs}`
-);
+  const srcFiles = os_scan_directory_and_read_entire_files(srcPath, false);
+  const indexJs = srcFiles['index.js'];
+  const indexCss = minifyCss(srcFiles['index.css']);
+
+  const indexHtml = minifyHtml(
+    evaluateDynamicJs(srcFiles['index.html'], ctx)
+      .replace('__RANDOM__', Math.random())
+      .replace('__JS_HASH__', hashFile(indexJs))
+      .replace(
+        '<link rel="stylesheet" href="./index.css" />',
+        `<style>${indexCss}</style>`
+      )
+  );
+
+  os_remove_directory(outputPath);
+  os_copy_directory(publicPath, outputPath);
+  os_write_file(path.join(outputPath, 'index.html'), indexHtml);
+  os_write_file(
+    path.join(outputPath, 'index.js'),
+    inlineVariables(indexJs, vars)
+  );
+};
+
+run();
