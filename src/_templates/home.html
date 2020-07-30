@@ -2,7 +2,11 @@
   <div class="content">
     <div class="Posts">
       {posts.slice().reverse().map(e => `
-      <div class="post"><a href="${e.slug}">${e.title}</a></div>
+        <div class="post">
+          <img src="${e.image}" alt="${e.title}"/>
+          <a href="${e.slug}">${e.title}</a>
+          <div class="summary">${e.headline}</div>
+        </div>
       `)}
     </div>
   </div>

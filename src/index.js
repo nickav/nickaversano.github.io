@@ -9,12 +9,12 @@ function onLinkClick(event) {
     return;
   }
 
-  history.pushState(null, '', href);
-
   const payload = {
     path: url.pathname,
     method: 'PUSH',
   };
+
+  history.pushState(null, '', href);
   route(payload);
 
   // prevent page from reloading
@@ -29,17 +29,17 @@ function handlePopState(event) {
 function route(state) {
   console.log('route', state);
 
+  window.scrollTo(0, 0);
+  document.body.scrollTop = 0;
+
   const slug = state.path.slice(1);
-
-  let page = pages.find((it) => it.slug === slug);
-
-  if (!page) {
-    page = { title: '', html: 'Not Found!' };
-  }
+  const page = pages.find((it) => it.slug === slug) || pages[0];
 
   document.title = page.title;
   $page.innerHTML = page.html;
   updateLinks($page.getElementsByTagName('a'));
+
+  return page;
 }
 
 const origin = window.location.origin;
