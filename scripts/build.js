@@ -118,20 +118,6 @@ const hashFile = (contents, type = 'sha1') => {
   return hash.read();
 };
 
-const matchAll = (str, regex) => {
-  if (!regex.global) {
-    const result = str.match(regex);
-    return result ? [result] : [];
-  }
-
-  const result = [];
-  let match = null;
-  while ((match = regex.exec(str))) {
-    result.push(match);
-  }
-  return result;
-};
-
 const evalWithContext = (js, ctx = {}) => {
   return vm.runInContext(js, vm.createContext(ctx));
 };
@@ -204,64 +190,106 @@ const evaluateDynamicJs = (str, ctx = {}) => {
   return result;
 };
 
-const inlineVariables = (str, ctx) => {
+const inlineGlobals = (str, vars) => {
   str = '\n' + str;
 
-  Object.keys(ctx)
+  Object.keys(vars)
     .reverse()
     .forEach((key) => {
-      const value = ctx[key];
-      if (typeof value === 'function') return;
+      const value = vars[key];
 
-      const inline = `const ${key} = ${JSON.stringify(value)};\n`;
-      str = inline + str;
+      const inline =
+        typeof value === 'function'
+          ? `var ${key} = ${value.toString()};`
+          : `const ${key} = ${JSON.stringify(value)};`;
+      str = `${inline}\n${str}`;
     });
 
   return str;
 };
+
+function titleify(title, postfix) {
+  return title && title !== postfix ? title + ' | ' + postfix : postfix;
+}
 
 const run = () => {
   const publicPath = path.join(__dirname, '../public');
   const outputPath = path.join(__dirname, '../build');
   const srcPath = path.join(__dirname, '../src');
   const postsPath = path.join(srcPath, '_posts');
+  const templatesPath = path.join(srcPath, '_templates');
 
   const posts = parseMarkdownFiles(
     os_scan_directory_and_read_entire_files(postsPath, false)
   );
 
+  const srcFiles = os_scan_directory_and_read_entire_files(srcPath, false);
+  const destFiles = {};
+
   const vars = {
+    pages: [],
     posts,
+    titleify,
+  };
+
+  const inline = (file) => {
+    return fs.readFileSync(path.join(publicPath, file)).toString();
+  };
+
+  const icon = (name) => {
+    return inline(path.join('images/icons', `${name}.svg`));
   };
 
   const ctx = {
     ...vars,
-    inline: (file) => {
-      return fs.readFileSync(path.join(publicPath, file)).toString();
-    },
+    inline,
+    icon,
+    style: minifyCss(srcFiles['index.css']),
+    title: 'Nick Aversano',
+    content: '',
+    meta: '',
   };
 
-  const srcFiles = os_scan_directory_and_read_entire_files(srcPath, false);
-  const indexJs = srcFiles['index.js'];
-  const indexCss = minifyCss(srcFiles['index.css']);
-
-  const indexHtml = minifyHtml(
-    evaluateDynamicJs(srcFiles['index.html'], ctx)
-      .replace('__RANDOM__', Math.random())
-      .replace('__JS_HASH__', hashFile(indexJs))
-      .replace(
-        '<link rel="stylesheet" href="./index.css" />',
-        `<style>${indexCss}</style>`
-      )
+  const templates = os_scan_directory_and_read_entire_files(
+    templatesPath,
+    false
   );
+
+  const doTemplate = (templateName, ctx) =>
+    evaluateDynamicJs(templates[`${templateName}.html`], ctx);
+
+  const homeHtml = doTemplate('home', ctx);
+  vars.pages = [{ slug: '', title: '', html: homeHtml }];
+  destFiles['index.js'] = inlineGlobals(srcFiles['index.js'], vars);
+
+  const indexJsHash = hashFile(srcFiles['index.js']);
+
+  const buildHtmlPage = (ctx, content) => {
+    if (content) ctx.content = content;
+
+    return minifyHtml(
+      evaluateDynamicJs(srcFiles['index.html'], ctx).replace(
+        '__JS_HASH__',
+        indexJsHash
+      )
+    );
+  };
+
+  destFiles['index.html'] = buildHtmlPage(ctx, homeHtml);
+
+  posts.forEach((post) => {
+    ctx.title = titleify(post.title, 'Nick Aversano');
+
+    const html = buildHtmlPage(ctx, post.html);
+    destFiles[`${post.slug}.html`] = html;
+  });
 
   os_remove_directory(outputPath);
   os_copy_directory(publicPath, outputPath);
-  os_write_file(path.join(outputPath, 'index.html'), indexHtml);
-  os_write_file(
-    path.join(outputPath, 'index.js'),
-    inlineVariables(indexJs, vars)
-  );
+  Object.keys(destFiles).forEach((key) => {
+    const contents = destFiles[key];
+    os_write_file(path.join(outputPath, key), contents);
+  });
 };
 
 run();

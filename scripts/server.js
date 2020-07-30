@@ -26,7 +26,12 @@ const server = http.createServer((req, res) => {
   const parsedUrl = url.parse(req.url);
   let relativeName = parsedUrl.pathname;
   let pathname = path.join(root, relativeName);
-  const ext = path.parse(pathname).ext || '.html';
+  let ext = path.parse(pathname).ext;
+
+  if (!ext && !relativeName.endsWith('/')) {
+    ext = '.html';
+    pathname += ext;
+  }
 
   fs.stat(pathname, (err, stat) => {
     if (err) {
@@ -38,6 +43,7 @@ const server = http.createServer((req, res) => {
     if (stat.isDirectory()) {
       pathname = path.join(pathname, `index.html`);
       relativeName = path.join(relativeName, `index.html`);
+      ext = '.html';
     }
 
     fs.readFile(pathname, (err, data) => {

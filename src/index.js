@@ -75,6 +75,11 @@ function bindInternalLinkListeners(links) {
 function load() {
   addBlankTargetToExternalLinks();
 
+  const $year = document.getElementById('year');
+  if ($year) {
+    $year.innerText = new Date().getFullYear();
+  }
+
   const historyIsSupported = typeof history.pushState === 'function';
 
   if (historyIsSupported) {
