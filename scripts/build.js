@@ -81,7 +81,10 @@ const parseMarkdownFiles = (files) =>
     const key = path_basename(file);
     const parts = key.split('-');
     const id = parseInt(parts[0], 10);
-    const slug = parts.slice(1).join('-').replace(/\.md$/, '');
+    const slug = parts
+      .slice(1)
+      .join('-')
+      .replace(/\.md$/, '');
 
     const [props, data] = extractFrontmatterAndData(raw);
 
@@ -208,6 +211,17 @@ const inlineGlobals = (str, vars) => {
   return str;
 };
 
+const prettyDate = (str) => {
+  const date = new Date(str);
+  const dd = date
+    .getDate()
+    .toString()
+    .padStart(2, '0');
+  const mm = (date.getMonth() + 1).toString().padStart(2, '0');
+  const yyyy = date.getFullYear().toString();
+  return `${yyyy}-${mm}-${dd}`;
+};
+
 const run = () => {
   const publicPath = path.join(__dirname, '../public');
   const outputPath = path.join(__dirname, '../build');
@@ -222,22 +236,8 @@ const run = () => {
   const srcFiles = os_scan_directory_and_read_entire_files(srcPath, false);
   const destFiles = {};
 
-  const vars = {
-    pages: [],
-    posts,
-  };
-
   const raw = (file) => {
     return fs.readFileSync(path.join(publicPath, file)).toString();
-  };
-
-  const ctx = {
-    ...vars,
-    raw,
-    style: minifyCss(srcFiles['index.css']),
-    title: 'Nick Aversano',
-    content: '',
-    meta: '',
   };
 
   const templates = os_scan_directory_and_read_entire_files(
@@ -245,39 +245,57 @@ const run = () => {
     false
   );
 
-  const doTemplate = (templateName, ctx) =>
+  const template = (templateName, ctx) =>
     evaluateDynamicJs(templates[`${templateName}.html`], ctx);
 
+  const ctx = {
+    posts,
+    raw,
+    prettyDate,
+    style: minifyCss(srcFiles['index.css']),
+    title: 'Nick Aversano',
+    content: '',
+    meta: '',
+  };
+
   posts.forEach((post) => {
-    ctx.title = post.title;
-    ctx.post = post;
-    post.html = doTemplate('post', ctx);
+    post.html = template('post', { ...ctx, title: post.title, post });
   });
 
-  ctx.title = 'Nick Aversano';
-  const homeHtml = doTemplate('home', ctx);
-  vars.pages = [{ slug: '', title: 'Nick Aversano', html: homeHtml }];
-  destFiles['index.js'] = inlineGlobals(srcFiles['index.js'], vars);
+  const homeHtml = template('home', ctx);
+  const jsGlobals = {
+    posts: posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      slug: post.slug,
+      html: post.html,
+    })),
+    pages: [
+      {
+        slug: '',
+        title: 'Nick Aversano',
+        html: homeHtml,
+      },
+    ],
+  };
+  destFiles['index.js'] = inlineGlobals(srcFiles['index.js'], jsGlobals);
 
   const indexJsHash = hashFile(srcFiles['index.js']).slice(0, 8);
 
-  const buildHtmlPage = (ctx, content) => {
-    if (content) ctx.content = content;
-
+  const html = (ctx, content = '') => {
     return minifyHtml(
-      evaluateDynamicJs(srcFiles['index.html'], ctx).replace(
+      evaluateDynamicJs(srcFiles['index.html'], { ...ctx, content }).replace(
         '__JS_HASH__',
         indexJsHash
       )
     );
   };
 
-  destFiles['index.html'] = buildHtmlPage(ctx, homeHtml);
+  destFiles['index.html'] = html(ctx, homeHtml);
 
   posts.forEach((post) => {
     ctx.title = post.title;
-    const html = buildHtmlPage(ctx, post.html);
-    destFiles[`${post.slug}.html`] = html;
+    destFiles[`${post.slug}.html`] = html(ctx, post.html);
   });
 
   os_remove_directory(outputPath);

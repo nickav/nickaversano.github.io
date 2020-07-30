@@ -1,7 +1,7 @@
 if (typeof posts === 'undefined') posts = [];
 if (typeof pages === 'undefined') pages = [];
 
-const content = document.getElementById('content');
+const $page = document.getElementById('page');
 
 function onLinkClick(event) {
   const href = event.target.href;
@@ -45,8 +45,8 @@ function route(state) {
   }
 
   document.title = page.title;
-  content.innerHTML = page.html;
-  bindInternalLinkListeners(content.getElementsByTagName('a'));
+  $page.innerHTML = page.html;
+  bindInternalLinkListeners($page.getElementsByTagName('a'));
 }
 
 const origin = window.location.origin;
