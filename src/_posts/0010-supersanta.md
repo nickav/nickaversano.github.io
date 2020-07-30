@@ -1,6 +1,6 @@
 ---
 title: Super Santa
-headline: winter-themed game
+summary: my first completed, winter-themed game
 date: 2008-01-28 01:38:07
 image: /images/super-santa/default.jpg
 tags: game

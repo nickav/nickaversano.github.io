@@ -46,7 +46,7 @@ function route(state) {
 
   document.title = page.title;
   $page.innerHTML = page.html;
-  bindInternalLinkListeners($page.getElementsByTagName('a'));
+  updateLinks($page.getElementsByTagName('a'));
 }
 
 const origin = window.location.origin;
@@ -54,8 +54,12 @@ function isExternalLink(link) {
   return link.href.startsWith('http') && link.origin !== origin;
 }
 
-function addBlankTargetToExternalLinks() {
-  var links = document.getElementsByTagName('a');
+function updateLinks(links) {
+  addBlankTargetToExternalLinks(links);
+  bindInternalLinkListeners(links);
+}
+
+function addBlankTargetToExternalLinks(links) {
   for (var i = 0, n = links.length; i < n; i++) {
     const it = links[i];
     if (isExternalLink(it)) {
@@ -73,7 +77,7 @@ function bindInternalLinkListeners(links) {
 }
 
 function load() {
-  addBlankTargetToExternalLinks();
+  addBlankTargetToExternalLinks(document.getElementsByTagName('a'));
 
   const $year = document.getElementById('year');
   if ($year) {

@@ -2,7 +2,7 @@
 title:  "umd.io"
 headline: API for students
 date:   2015-03-30 01:38:07
-image: umdio.png
+image: /images/umdio.png
 tags: project
 link: http://umd.io
 ---

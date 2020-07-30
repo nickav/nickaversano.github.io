@@ -7,9 +7,9 @@ const vm = require('vm');
 const showdown = require('showdown');
 const converter = new showdown.Converter();
 
-const os_scan_directory = (dir, absolutePaths = true) => {
+const os_scan_directory = (dir) => {
   const results = fs.readdirSync(dir);
-  return absolutePaths ? results.map((file) => path.join(dir, file)) : results;
+  return results.map((file) => path.join(dir, file));
 };
 
 const os_read_entire_file = (path) => {
@@ -29,7 +29,7 @@ const os_copy_directory = (from, to) => {
 
 const os_scan_directory_and_read_entire_files = (dir, absolutePaths = true) => {
   const result = {};
-  os_scan_directory(dir, true).forEach((file) => {
+  os_scan_directory(dir).forEach((file) => {
     const key = absolutePaths ? file : path.relative(dir, file);
     result[key] = os_read_entire_file(file);
   });
@@ -42,6 +42,31 @@ const os_remove_directory = (dir) => {
 
 const path_basename = (file) => path.basename(file);
 
+const getFrontmatterValue = (str) => {
+  const isQuotted = str.startsWith(`'`) || str.startsWith(`"`);
+
+  if (isQuotted) {
+    return str = str.slice(1, str.length - 1);
+  }
+
+  if (str === 'true' || str === 'yes') {
+    return true;
+  }
+
+  if (str === 'false' || str === 'no') {
+    return false;
+  }
+
+  if (!str.includes(' ')) {
+    const number = parseFloat(str, 10);
+    if (!Number.isNaN(number)) {
+      return number;
+    }
+  }
+
+  return str;
+}
+
 const parseFrontmatter = (content) => {
   const lines = content.split('\n');
 
@@ -53,9 +78,8 @@ const parseFrontmatter = (content) => {
     if (delimIndex < 0) return;
 
     const key = line.slice(0, delimIndex).trim();
-    const value = line.slice(delimIndex + 1).trim();
-    const isQuotted = value.startsWith(`'`) || value.startsWith(`"`);
-    result[key] = isQuotted ? value.slice(1, value.length - 1) : value;
+    const value = getFrontmatterValue(line.slice(delimIndex + 1).trim());
+    result[key] = value;
   });
 
   return result;
@@ -126,6 +150,10 @@ const evalWithContext = (js, ctx = {}) => {
 };
 
 const stringify = (value) => {
+  if (value === null) {
+    return '';
+  }
+
   if (Array.isArray(value)) {
     return value.join('\n');
   }
@@ -231,7 +259,7 @@ const run = () => {
 
   const posts = parseMarkdownFiles(
     os_scan_directory_and_read_entire_files(postsPath, false)
-  );
+  ).filter(e => e.draft !== true);
 
   const srcFiles = os_scan_directory_and_read_entire_files(srcPath, false);
   const destFiles = {};
@@ -255,7 +283,9 @@ const run = () => {
     style: minifyCss(srcFiles['index.css']),
     title: 'Nick Aversano',
     content: '',
-    meta: '',
+    meta: null,
+    head: '',
+    icons: null,
   };
 
   posts.forEach((post) => {

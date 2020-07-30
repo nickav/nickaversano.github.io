@@ -7,16 +7,16 @@ const cwd = process.cwd();
 const root = process.argv[2] ? path.join(cwd, process.argv[2]) : cwd;
 
 const extToContentType = {
-  '.ico': 'image/x-icon',
   '.html': 'text/html',
+  '.css': 'text/css',
   '.js': 'text/javascript',
   '.json': 'application/json',
-  '.css': 'text/css',
+  '.ico': 'image/x-icon',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
+  '.svg': 'image/svg+xml',
   '.wav': 'audio/wav',
   '.mp3': 'audio/mpeg',
-  '.svg': 'image/svg+xml',
   '.pdf': 'application/pdf',
 };
 
