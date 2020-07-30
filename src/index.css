@@ -75,6 +75,10 @@ img {
   max-width: 100%;
 }
 
+iframe {
+  max-width: 100%;
+}
+
 h1 {
   font-size: 48px;
   font-weight: 600;
@@ -127,7 +131,7 @@ p,
 }
 
 .Header__wrapper {
-  max-width: 760px;
+  max-width: 680px;
   width: 100%;
   margin: 0 auto;
 
@@ -168,7 +172,7 @@ p,
 .content {
   padding: 32px;
   margin: 0 auto;
-  max-width: 760px;
+  max-width: 680px;
   width: 100%;
   line-height: 1.7;
   box-sizing: content-box;

@@ -289,23 +289,23 @@ const run = () => {
   };
 
   posts.forEach((post) => {
-    post.html = template('post', { ...ctx, title: post.title, post });
+    post.html = minifyHtml(template('post', { ...ctx, title: post.title, post }));
   });
 
   const homeHtml = template('home', ctx);
   const jsGlobals = {
-    posts: posts.map((post) => ({
-      id: post.id,
-      title: post.title,
-      slug: post.slug,
-      html: post.html,
-    })),
     pages: [
       {
         slug: '',
         title: 'Nick Aversano',
-        html: homeHtml,
+        html: minifyHtml(homeHtml),
       },
+      ...posts.map((post) => ({
+        id: post.id,
+        title: post.title,
+        slug: post.slug,
+        html: post.html,
+      })),
     ],
   };
   destFiles['index.js'] = inlineGlobals(srcFiles['index.js'], jsGlobals);

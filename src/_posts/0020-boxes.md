@@ -14,16 +14,14 @@ Total initial production time: 3 weeks.
 
 More Screen Shots:
 
-<img src="/images/boxes/boxes-2.png" alt="Boxes - Lava" />
+![Boxes - Start](/images/boxes/default.png)
 
-<img src="/images/boxes/boxes-3.png" alt="Boxes - Slow motion" />
+![Boxes - Lava](/images/boxes/boxes-2.png)
+
+![Boxes - Slow motion](/images/boxes/boxes-3.png)
 
 Please tell me what you think! 😄
 
-<a class="button primary" href="https://www.dropbox.com/s/xx7vimfhvubl5o7/boxes.zip?dl=0">
-  Play on Windows
-</a>
+[Play on Windows](https://www.dropbox.com/s/xx7vimfhvubl5o7/boxes.zip?dl=0)
 
-<a class="button secondary" href="https://www.dropbox.com/s/v101hnz11q6z9nn/boxes-mac.zip?dl=0">
-  Play on Mac
-</a>
+[Play on Mac](https://www.dropbox.com/s/v101hnz11q6z9nn/boxes-mac.zip?dl=0)

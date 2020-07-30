@@ -1,6 +1,3 @@
-if (typeof posts === 'undefined') posts = [];
-if (typeof pages === 'undefined') pages = [];
-
 const $page = document.getElementById('page');
 
 function onLinkClick(event) {
@@ -34,11 +31,7 @@ function route(state) {
 
   const slug = state.path.slice(1);
 
-  let page =
-    posts.find((it) => it.slug === slug) ||
-    pages.find((it) => it.slug === slug);
-
-  console.log({ posts, pages });
+  let page = pages.find((it) => it.slug === slug);
 
   if (!page) {
     page = { title: '', html: 'Not Found!' };

@@ -7,7 +7,6 @@
     <meta name="theme-color" content="#000000" />
     <link rel="shortcut icon" href="/favicon.png" />
     <style>{style}</style>
-    <!-- meta: tile, description, image, type('article', 'website'), url -->
     {meta && `
       <meta name="description" content="${meta.description}" />
       <meta itemprop="description" content="${meta.description}" />
@@ -27,7 +26,6 @@
       <meta property="og:image" content="${meta.image}" />
       <meta name="twitter:image" content="${meta.image}" />
     `}
-    <!-- icons: [[size, url], ...] -->
     {icons && icons.map(i => `
       <link rel="icon" type="image/png" sizes="${i[0]}" href="${i[1]}" />
       <link rel="apple-touch-icon" sizes="${i[0]}" href="${i[1]}" />

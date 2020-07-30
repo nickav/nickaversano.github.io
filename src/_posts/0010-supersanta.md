@@ -6,9 +6,9 @@ image: /images/super-santa/default.jpg
 tags: game
 ---
 
-<img src="/images/super-santa/gameplay.jpg" alt="Super Santa - Gameplay" />
+![Super Santa - Main Menu](/images/super-santa/default.jpg)
 
-<a class="button" href="https://www.dropbox.com/s/kuq4l4g7i6jdf7w/Super%20Santa.zip?dl=0">
-  Play on Windows
-</a>
+![Super Santa - Gameplay](/images/super-santa/gameplay.jpg)
+
+[Play on Windows](https://www.dropbox.com/s/kuq4l4g7i6jdf7w/Super%20Santa.zip?dl=0)
 
