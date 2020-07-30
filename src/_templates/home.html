@@ -1,5 +1,9 @@
-<div class="Posts">
-  {posts.slice().reverse().map(e => `
-  <div class="post"><a href="${e.slug}">${e.title}</a></div>
-  `)}
-</div>
+<section>
+  <div class="content">
+    <div class="Posts">
+      {posts.slice().reverse().map(e => `
+      <div class="post"><a href="${e.slug}">${e.title}</a></div>
+      `)}
+    </div>
+  </div>
+</section>

@@ -44,7 +44,7 @@ function route(state) {
     page = { title: '', html: 'Not Found!' };
   }
 
-  document.title = titleify(page.title, 'Nick Aversano');
+  document.title = page.title;
   content.innerHTML = page.html;
   bindInternalLinkListeners(content.getElementsByTagName('a'));
 }

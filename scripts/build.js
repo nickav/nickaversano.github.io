@@ -88,7 +88,7 @@ const parseMarkdownFiles = (files) =>
     return {
       id,
       slug,
-      html: converter.makeHtml(data.trim()),
+      body: converter.makeHtml(data.trim()),
       ...props,
     };
   });
@@ -208,10 +208,6 @@ const inlineGlobals = (str, vars) => {
   return str;
 };
 
-function titleify(title, postfix) {
-  return title && title !== postfix ? title + ' | ' + postfix : postfix;
-}
-
 const run = () => {
   const publicPath = path.join(__dirname, '../public');
   const outputPath = path.join(__dirname, '../build');
@@ -229,21 +225,15 @@ const run = () => {
   const vars = {
     pages: [],
     posts,
-    titleify,
   };
 
-  const inline = (file) => {
+  const raw = (file) => {
     return fs.readFileSync(path.join(publicPath, file)).toString();
-  };
-
-  const icon = (name) => {
-    return inline(path.join('images/icons', `${name}.svg`));
   };
 
   const ctx = {
     ...vars,
-    inline,
-    icon,
+    raw,
     style: minifyCss(srcFiles['index.css']),
     title: 'Nick Aversano',
     content: '',
@@ -258,11 +248,18 @@ const run = () => {
   const doTemplate = (templateName, ctx) =>
     evaluateDynamicJs(templates[`${templateName}.html`], ctx);
 
+  posts.forEach((post) => {
+    ctx.title = post.title;
+    ctx.post = post;
+    post.html = doTemplate('post', ctx);
+  });
+
+  ctx.title = 'Nick Aversano';
   const homeHtml = doTemplate('home', ctx);
-  vars.pages = [{ slug: '', title: '', html: homeHtml }];
+  vars.pages = [{ slug: '', title: 'Nick Aversano', html: homeHtml }];
   destFiles['index.js'] = inlineGlobals(srcFiles['index.js'], vars);
 
-  const indexJsHash = hashFile(srcFiles['index.js']);
+  const indexJsHash = hashFile(srcFiles['index.js']).slice(0, 8);
 
   const buildHtmlPage = (ctx, content) => {
     if (content) ctx.content = content;
@@ -278,8 +275,7 @@ const run = () => {
   destFiles['index.html'] = buildHtmlPage(ctx, homeHtml);
 
   posts.forEach((post) => {
-    ctx.title = titleify(post.title, 'Nick Aversano');
-
+    ctx.title = post.title;
     const html = buildHtmlPage(ctx, post.html);
     destFiles[`${post.slug}.html`] = html;
   });

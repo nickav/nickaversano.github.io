@@ -17,23 +17,30 @@
     <div id="app" class="App">
       <header>
         <div class="Header">
-          <div class="left">
-            <a href="/">Nick Aversano</a>
-          </div>
-          <div class="right">
-            <div class="icons">
-              <a href="https://github.com/nickav" target="_blank" class="icon">{icon('github')}</a>
-              <a href="https://soundcloud.com/nickaversano" target="_blank" class="icon">{icon('soundcloud')}</a>
+          <div class="Header__wrapper">
+            <div class="left">
+              <a href="/">Nick Aversano</a>
+            </div>
+            <div class="right">
+              <div class="icons">
+                <a href="https://github.com/nickav" target="_blank" class="icon" title="Github">
+                  💾
+                </a>
+                <a href="https://soundcloud.com/nickaversano" target="_blank" class="icon" title="SoundCloud">
+                  🎸
+                </a>
+                <a href="mailto:n@nickav.co" target="_blank" class="icon" title="Email">
+                  ✉️
+                </a>
+              </div>
             </div>
           </div>
         </div>
       </header>
 
-      <section>
-        <div id="content" class="content">
-          {content}
-        </div>
-      </section>
+      <div id="content">
+        {content}
+      </div>
 
       <footer>
         <div class="Footer">

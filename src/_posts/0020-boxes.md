@@ -2,7 +2,7 @@
 title: Boxes
 date: 2009-01-29 01:38:07
 headline: arcade game with 20k+ plays
-image: boxes/default.png
+image: /images/boxes/default.png
 tags: game
 ---
 
