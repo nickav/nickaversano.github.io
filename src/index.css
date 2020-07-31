@@ -41,13 +41,11 @@ table {
 html,
 body,
 #app {
-  color: black;
+  color: #111;
   font-size: 16px;
   font-family: 'San Fransisco Text', system, -apple-system, BlinkMacSystemFont,
     'Segoe UI', Roboto, Oxygen-Sans, Ubuntu, Cantarell, sans-serif;
   line-height: 1.5;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
 }
 
 #app {
@@ -63,11 +61,11 @@ body,
 a {
   color: inherit;
   text-decoration: none;
-  border-bottom: 2px solid #f31e8a;
+  border-bottom: 3px solid #f31e8a;
 }
 
 a:hover {
-  opacity: 0.5;
+  border-bottom: 3px solid #1ea3f3;
 }
 
 img {
@@ -86,6 +84,7 @@ h1 {
 
 h2 {
   font-size: 32px;
+  font-weight: 600;
 }
 
 h3 {
@@ -169,13 +168,15 @@ p,
   color: #ccc;
 }
 
-.content {
+.content__wrapper {
   padding: 32px;
+}
+
+.content {
   margin: 0 auto;
   max-width: 680px;
   width: 100%;
   line-height: 1.7;
-  box-sizing: content-box;
 }
 
 .content > * {
@@ -189,6 +190,16 @@ p,
 
 .Posts > *:not(:last-child) {
   margin-bottom: 32px;
+}
+
+.Post__image {
+  height: 16rem;
+}
+
+.Post__image img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
 }
 
 .summary {

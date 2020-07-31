@@ -1,24 +1,31 @@
 const $page = document.getElementById('page');
 
-function onLinkClick(event) {
-  const href = event.target.href;
-  const url = new URL(href);
+function createLinkClick(href) {
+  return function (event) {
+    const url = new URL(href);
 
-  if (url.pathname === window.location.pathname) {
+    if (url.pathname === window.location.pathname) {
+      event.preventDefault();
+      return;
+    }
+
+    const payload = {
+      path: url.pathname,
+      method: 'PUSH',
+    };
+
+    history.pushState(null, '', href);
+    route(payload);
+
+    // prevent page from reloading
     event.preventDefault();
-    return;
+    return false;
   }
+}
 
-  const payload = {
-    path: url.pathname,
-    method: 'PUSH',
-  };
-
-  history.pushState(null, '', href);
-  route(payload);
-
-  // prevent page from reloading
+function preventDefault(event) {
   event.preventDefault();
+  return false;
 }
 
 function handlePopState(event) {
@@ -44,7 +51,7 @@ function route(state) {
 
 const origin = window.location.origin;
 function isExternalLink(link) {
-  return link.href.startsWith('http') && link.origin !== origin;
+  return link.href.startsWith('http') && !link.href.startsWith(origin);
 }
 
 function updateLinks(links) {
@@ -64,13 +71,25 @@ function addBlankTargetToExternalLinks(links) {
 function bindInternalLinkListeners(links) {
   Array.from(links).forEach((link) => {
     if (!isExternalLink(link)) {
-      link.addEventListener('click', onLinkClick);
+      link.addEventListener('click', createLinkClick(link.href));
     }
   });
 }
 
+function maybeRevealEmail(event) {
+  if (!event.isTrusted) return;
+
+  event.target.href = `mailto:n@${location.host}`;
+}
+
 function load() {
   addBlankTargetToExternalLinks(document.getElementsByTagName('a'));
+
+  const $email = document.getElementById('email');
+  if ($email) {
+    $email.addEventListener('keydown', maybeRevealEmail);
+    $email.addEventListener('click', maybeRevealEmail);
+  }
 
   const $year = document.getElementById('year');
   if ($year) {

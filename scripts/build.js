@@ -46,7 +46,7 @@ const getFrontmatterValue = (str) => {
   const isQuotted = str.startsWith(`'`) || str.startsWith(`"`);
 
   if (isQuotted) {
-    return str = str.slice(1, str.length - 1);
+    return (str = str.slice(1, str.length - 1));
   }
 
   if (str === 'true' || str === 'yes') {
@@ -65,7 +65,7 @@ const getFrontmatterValue = (str) => {
   }
 
   return str;
-}
+};
 
 const parseFrontmatter = (content) => {
   const lines = content.split('\n');
@@ -105,10 +105,7 @@ const parseMarkdownFiles = (files) =>
     const key = path_basename(file);
     const parts = key.split('-');
     const id = parseInt(parts[0], 10);
-    const slug = parts
-      .slice(1)
-      .join('-')
-      .replace(/\.md$/, '');
+    const slug = parts.slice(1).join('-').replace(/\.md$/, '');
 
     const [props, data] = extractFrontmatterAndData(raw);
 
@@ -241,10 +238,7 @@ const inlineGlobals = (str, vars) => {
 
 const prettyDate = (str) => {
   const date = new Date(str);
-  const dd = date
-    .getDate()
-    .toString()
-    .padStart(2, '0');
+  const dd = date.getDate().toString().padStart(2, '0');
   const mm = (date.getMonth() + 1).toString().padStart(2, '0');
   const yyyy = date.getFullYear().toString();
   return `${yyyy}-${mm}-${dd}`;
@@ -259,7 +253,7 @@ const run = () => {
 
   const posts = parseMarkdownFiles(
     os_scan_directory_and_read_entire_files(postsPath, false)
-  ).filter(e => e.draft !== true);
+  ).filter((e) => e.draft !== true);
 
   const srcFiles = os_scan_directory_and_read_entire_files(srcPath, false);
   const destFiles = {};
@@ -289,7 +283,9 @@ const run = () => {
   };
 
   posts.forEach((post) => {
-    post.html = minifyHtml(template('post', { ...ctx, title: post.title, post }));
+    post.html = minifyHtml(
+      template('post', { ...ctx, title: post.title, post })
+    );
   });
 
   const homeHtml = template('home', ctx);
@@ -312,20 +308,38 @@ const run = () => {
 
   const indexJsHash = hashFile(srcFiles['index.js']).slice(0, 8);
 
-  const html = (ctx, content = '') => {
+  const makeHtmlPage = (ctx, content = '', meta = null) => {
+    const icons = null;
+
     return minifyHtml(
-      evaluateDynamicJs(srcFiles['index.html'], { ...ctx, content }).replace(
-        '__JS_HASH__',
-        indexJsHash
-      )
+      evaluateDynamicJs(srcFiles['index.html'], {
+        ...ctx,
+        content,
+        meta,
+        icons,
+      }).replace('__JS_HASH__', indexJsHash)
     );
   };
 
-  destFiles['index.html'] = html(ctx, homeHtml);
+  const site = {
+    title: 'Nick Aversano',
+    description: "Nick Aversano's Home page",
+    type: 'website',
+    image: '/favicon.png',
+    url: 'http://nickav.co',
+  };
+  destFiles['index.html'] = makeHtmlPage(ctx, homeHtml, site);
 
   posts.forEach((post) => {
     ctx.title = post.title;
-    destFiles[`${post.slug}.html`] = html(ctx, post.html);
+    const meta = {
+      title: post.title,
+      description: post.headline,
+      type: 'article',
+      image: post.image,
+      url: `${site.url}/${post.slug}`,
+    };
+    destFiles[`${post.slug}.html`] = makeHtmlPage(ctx, post.html, meta);
   });
 
   os_remove_directory(outputPath);

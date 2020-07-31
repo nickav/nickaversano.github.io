@@ -1,11 +1,16 @@
-<section>
+<section class="content__wrapper">
   <div class="content">
     <div class="Posts">
-      {posts.slice().reverse().map(e => `
-        <div class="post">
-          <img src="${e.image}" alt="${e.title}"/>
-          <a href="${e.slug}">${e.title}</a>
-          <div class="summary">${e.headline}</div>
+      {posts.slice().reverse().map(post => `
+        <div class="Post">
+          <a href="/${post.slug}">
+            <div class="Post__image">
+              <img src="${post.image}" alt="${post.title}" />
+            </div>
+          </a>
+          <h2><a href="/${post.slug}">${post.title}</a></h2>
+          <div class="date">${prettyDate(post.date)} &mdash; ${post.tags}</div>
+          <div>${post.headline}</div>
         </div>
       `)}
     </div>
